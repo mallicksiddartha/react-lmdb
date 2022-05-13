@@ -72,3 +72,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 ### Some changes
 Checking commit process from vs code
+Checking 2nd commit.
