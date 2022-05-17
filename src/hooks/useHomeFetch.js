@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import API from "../API";
 //helpers
 import { isPersistedState } from "../helpers";
+//session storage key
+import { HOME_SESSION_STORAGE_KEY } from '../config';
 
 //initial State
 
@@ -46,7 +48,7 @@ export const useHomeFetch = () => {
     //initial data and searched data
     useEffect(() => {
         if (!searchTerm) {
-            const sessionState = isPersistedState('homeState');
+            const sessionState = isPersistedState(HOME_SESSION_STORAGE_KEY);
 
             if (sessionState) {
                 console.log('From sessionStorage');
@@ -72,7 +74,7 @@ export const useHomeFetch = () => {
     // Write to sessionStorage
     useEffect(() => {
         if (!searchTerm) {
-            sessionStorage.setItem('homeState', JSON.stringify(state));
+            sessionStorage.setItem(HOME_SESSION_STORAGE_KEY, JSON.stringify(state));
         }
 
     }, [searchTerm, state]);
