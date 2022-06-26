@@ -61,7 +61,7 @@ const Home = () => {
             }
             {
                 state.page < state.total_pages && !loading && (
-                    <Button text="Load more" callback={() => setIsLoadMore(true)} />
+                    <Button text="Load moress" callback={() => setIsLoadMore(true)} />
                 )
             }
         </>
