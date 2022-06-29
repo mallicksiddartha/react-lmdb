@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 
 //images
@@ -12,39 +12,45 @@ import { Wrapper, Content } from "./SearchBar.styles";
  * @param { setSearchTerm The setter function for search term typed by user} param0 
  * @returns Search bar for movies with related functionality
  */
-const SearchBar = ({ setSearchTerm }) => {
-    const [ state, setState ] = useState('');
+class SearchBar extends Component {
+    state = {
+        value: '',
+    };
+    timeout = null;
 
-    const initial = useRef(true);
+    componentDidUpdate(_prevProps, prevState) {
+        if (this.state.value !== prevState.value) {
+            const { setSearchTerm } = this.props;
 
-    useEffect (() => {
-        if(initial.current) {
-            initial.current = false;
-             return;
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => {
+                const { value } = this.state;
+                setSearchTerm(value);
+            }, 1000);
         }
 
-        const timer = setTimeout(() => {
-            setSearchTerm(state);
-        }, 1000);
+    };
 
-        return () => clearTimeout(timer);
+    render() {
+        const { value } = this.state;
 
-    },[setSearchTerm, state]);
-
-    return (
-        <Wrapper>
-            <Content>
-                <img src={searchIcon} alt="search-icon" />
-                <input 
-                    type="text"
-                    placeholder="Search movie"
-                    onChange={event => setState(event.currentTarget.value)}
-                    value={ state }
-                />
-            </Content>
-        </Wrapper>
-    );
-
+        return (
+            <Wrapper>
+                <Content>
+                    <img src={searchIcon} alt="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search movie"
+                        onChange={event => this.setState({
+                            ...this.prevState,
+                            value: event.currentTarget.value
+                        })}
+                        value={value}
+                    />
+                </Content>
+            </Wrapper>
+        );
+    }
 };
 SearchBar.propTypes = {
     setSearchTerm: PropTypes.string

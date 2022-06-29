@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
 //API
 import API from "../API";
 
@@ -13,59 +13,111 @@ import TwoSpinner from "./Spinner";
 import SearchBar from "./SearchBar";
 import Button from "./Button";
 
-// hooks
-import { useHomeFetch } from "../hooks/useHomeFetch";
 
 // images
 import NoImage from "../images/no_image.jpg";
 
-const Home = () => {
-    const {
-        state,
-        loading,
-        error,
-        searchTerm,
-        setSearchTerm,
-        setIsLoadMore
-    } = useHomeFetch();
+const initialState = {
+    page: 0,
+    results: [],
+    total_pages: 0,
+    total_results: 0
+};
 
-    // console.log(state);
-    return (
-        <>
-            {
-                !searchTerm && state.results[0] ? <HeroImage
-                    image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${state.results[0].backdrop_path}`}
-                    title={state.results[0].original_title}
-                    text={state.results[0].overview}
-                /> : null
-            }
-            <SearchBar setSearchTerm={setSearchTerm} />
-            <Grid header={searchTerm ? "Search Results" : "Popular Movies"}>
+class Home extends Component {
+    state = {
+        movies: initialState,
+        searchTerm: '',
+        isLoadingMore: false,
+        loading: false,
+        error: false
+    };
+
+    fetchMovies = async (page, searchTerm = '') => {
+        try {
+            this.setState({
+                error: false,
+                loading: true
+            });
+            const movies = await API.fetchMovies(searchTerm, page);
+            // console.log(movies);
+
+            this.setState(prev => ({
+                ...prev,
+                movies: {
+                    ...movies,
+                    results:
+                        page > 1 ? [...prev.movies.results, ...movies.results] : [...movies.results]
+
+                },
+                loading: false
+            }))
+
+        } catch (error) {
+            this.setState({
+                error: true,
+                loading: false
+            })
+        }
+    }
+
+    handleSearch = searchTerm => {
+        this.setState({
+            movies: initialState,
+            searchTerm
+        }, () => this.fetchMovies(1, this.state.searchTerm)
+        );
+    }
+
+    handleLoadMore = () =>
+        this.fetchMovies(this.state.movies.page + 1, this.state.searchTerm);
+
+    componentDidMount() {
+        this.fetchMovies(1);
+    }
+
+    render() {
+
+        const { searchTerm, movies, loading, error } = this.state;
+
+        return (
+            <>
                 {
-                    state.results.map(movie => (
-                        <Thumb
-                            key={movie.id}
-                            clickable
-                            image={
-                                movie.poster_path
-                                    ? IMAGE_BASE_URL + POSTER_SIZE + movie.poster_path
-                                    : NoImage
-                            }
-                            movieId={movie.id}
-                        />)
+                    !searchTerm && movies.results[0] ? <HeroImage
+                        image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${movies.results[0].backdrop_path}`}
+                        title={movies.results[0].original_title}
+                        text={movies.results[0].overview}
+                    /> : null
+                }
+                <SearchBar setSearchTerm={this.handleSearch} />
+                <Grid header={searchTerm ? "Search Results" : "Popular Movies"}>
+                    {
+                        movies.results.map(movie => (
+                            <Thumb
+                                key={movie.id}
+                                clickable
+                                image={
+                                    movie.poster_path
+                                        ? IMAGE_BASE_URL + POSTER_SIZE + movie.poster_path
+                                        : NoImage
+                                }
+                                movieId={movie.id}
+                            />)
+                        )
+                    }
+                </Grid>
+                {
+                    loading && <TwoSpinner />
+                }
+                {
+                    movies.page < movies.total_pages && !loading && (
+                        <Button text="Load more" callback={this.handleLoadMore} />
                     )
                 }
-            </Grid>
-            {
-                loading && <TwoSpinner />
-            }
-            {
-                state.page < state.total_pages && !loading && (
-                    <Button text="Load moress" callback={() => setIsLoadMore(true)} />
-                )
-            }
-        </>
-    )
+            </>
+        )
+    };
+
 }
 
 export default Home;
