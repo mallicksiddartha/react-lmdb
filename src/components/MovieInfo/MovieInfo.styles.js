@@ -69,4 +69,12 @@ export const Text = styled.div`
             font-size: var(--fontBig);
         }
     }
+
+    .rate {
+        margin: 0 0 0 40px;
+
+        p {
+            margin: 0;
+        }
+    }
 `;
